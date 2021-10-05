@@ -12,6 +12,8 @@ namespace GUIPBD
 {
     public partial class fEmpresa : Form
     {
+        string Modo = "";
+
         public fEmpresa()
         {
             InitializeComponent();
@@ -47,6 +49,7 @@ namespace GUIPBD
 
         private void ModoEdicion(string modo)
         {
+            this.Modo = modo;
             switch (modo)
             {
                 case "Lectura":
@@ -93,9 +96,12 @@ namespace GUIPBD
             try
             {
                 DialogResult dr = MessageBox.Show("¿Está seguro de eliminar este registro?", "Eliminar", MessageBoxButtons.YesNo);
-                if(dr == DialogResult.Yes)
+                if (dr == DialogResult.Yes)
                 {
                     //ejecutar el deleted de tabla
+                    int id = int.Parse(this.idEmpresaTextBox.Text);
+                    this.empresaTableAdapter.Delete(id);
+                    this.CargaDatos();
                 }
                 else
                 {
@@ -105,6 +111,45 @@ namespace GUIPBD
             catch (Exception ex)
             {
                 MessageBox.Show("Error Eliminar: " + ex.Message.ToString());
+            }
+        }
+
+        private bool Valida()
+        {
+            this.errorProvider1.Clear();
+            bool validado = true;
+            if (this.razonSocialTextBox.Text.Trim() == "")
+            {
+                validado = false;
+                this.errorProvider1.SetError(this.razonSocialTextBox, "Campo requerido");
+            }
+            return validado;
+        }
+
+        private void btnGuardar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.Valida())
+                {
+                    switch (this.Modo)
+                    {
+                        case "Insertar":
+                            //Ejecutar el insert de la tabla empresa
+                            this.empresaTableAdapter.Insert(this.razonSocialTextBox.Text);
+                            break;
+                        case "Actualizar":
+                            //Ejecutar el update de la tabla empresa
+                            int id = int.Parse(this.idEmpresaTextBox.Text);
+                            this.empresaTableAdapter.Update(this.razonSocialTextBox.Text, id);
+                            break;
+                    }
+                    this.CargaDatos();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message.ToString());
             }
         }
     }
